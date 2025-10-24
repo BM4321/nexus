@@ -1,13 +1,11 @@
 # Ignore everything by default
 *
 
-# EXCEPT the directories we want to keep (the projects themselves)
 !/backend/
 !/frontend/
 
-# Ignore files within the top-level directories that aren't source code
 /backend/node_modules
 /frontend/node_modules
 /frontend/.expo
-/frontend_old_backup/ # Ignore the backup you made
-/frontend_corrupted_backup/ # Ignore the old backup
+/frontend_old_backup/ 
+/frontend_corrupted_backup/ 
