@@ -1,10 +1,10 @@
 require('dotenv').config(); // Load .env file at the very start
 const express = require('express');
 const mongoose = require('mongoose');
-
 // --- NEW IMPORTS ---
 const http = require('http');
 const { Server } = require('socket.io');
+const cors = require('cors');
 // -------------------
 
 /* --- Configuration --- */
@@ -27,6 +27,10 @@ connectDB();
 /* --- Express App Setup --- */
 const app = express();
 app.use(express.json());
+
+// --- CORS: allow frontend requests (set CORS_ORIGIN in .env for production) ---
+const CORS_ORIGIN = process.env.CORS_ORIGIN || '*'; // e.g. "http://192.168.0.11:19000" or your Expo URL
+app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
 
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
