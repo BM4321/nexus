@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
@@ -6,6 +7,9 @@ import axios from 'axios';
 const AuthContext = createContext({});
 
 export const useAuth = () => useContext(AuthContext);
+
+// API Configuration
+const API_URL = 'http://localhost:3000/api/auth';
 
 // Storage helper that works on both web and native
 const storage = {
@@ -57,26 +61,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // MOCK LOGIN - Remove this when backend is ready
-      if (email && password) {
-        const mockToken = 'mock-jwt-token-' + Date.now();
-        const mockUser = {
-          id: 1,
-          email: email,
-          name: email.split('@')[0]
-        };
-        
-        await storage.setItem('token', mockToken);
-        await storage.setItem('user', JSON.stringify(mockUser));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${mockToken}`;
-        setUser(mockUser);
-        
-        return { success: true };
-      }
-      
-      // REAL API CALL - Uncomment when backend is ready
-      /*
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      const response = await axios.post(`${API_URL}/login`, {
         email,
         password,
       });
@@ -89,7 +74,6 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       
       return { success: true };
-      */
     } catch (error) {
       console.error('Login error:', error);
       return { 
@@ -110,31 +94,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password, name) => {
+  const register = async (name, email, password, role, location) => {
     try {
-      // MOCK REGISTER - Remove this when backend is ready
-      if (email && password && name) {
-        const mockToken = 'mock-jwt-token-' + Date.now();
-        const mockUser = {
-          id: 1,
-          email: email,
-          name: name
-        };
-        
-        await storage.setItem('token', mockToken);
-        await storage.setItem('user', JSON.stringify(mockUser));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${mockToken}`;
-        setUser(mockUser);
-        
-        return { success: true };
-      }
-      
-      // REAL API CALL - Uncomment when backend is ready
-      /*
-      const response = await axios.post('http://localhost:3000/api/auth/register', {
+      const response = await axios.post(`${API_URL}/register`, {
+        name,
         email,
         password,
-        name,
+        role: role || 'talent',
+        location: location || {
+          type: 'Point',
+          coordinates: [39.2083, -6.7924] // Default: Dar es Salaam
+        }
       });
       
       const { token, user } = response.data;
@@ -145,7 +115,6 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       
       return { success: true };
-      */
     } catch (error) {
       console.error('Register error:', error);
       return { 

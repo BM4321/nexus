@@ -1,11 +1,11 @@
-# Ignore everything by default
-*
-
+# Allow frontend/ and backend/ folders
 !/backend/
 !/frontend/
 
-/backend/node_modules
+# Explicitly allow the context directory and its files
+!/frontend/context/AuthContext.js
+!/frontend/context/
+
+# Ensure these are still ignored
 /frontend/node_modules
-/frontend/.expo
-/frontend_old_backup/ 
-/frontend_corrupted_backup/ 
+/backend/node_modules

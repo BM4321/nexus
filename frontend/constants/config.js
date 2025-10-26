@@ -1,1 +1,1 @@
-export const API_URL = 'http://192.168.0.11/api'; // <--- VERIFY THIS IP AND PORT
+export const API_URL = 'http://192.168.0.101:3000/api/auth';
