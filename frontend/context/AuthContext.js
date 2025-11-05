@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
@@ -100,11 +99,8 @@ export const AuthProvider = ({ children }) => {
         name,
         email,
         password,
-        role: role || 'talent',
-        location: location || {
-          type: 'Point',
-          coordinates: [39.2083, -6.7924] // Default: Dar es Salaam
-        }
+        role: role || 'user',
+        location,
       });
       
       const { token, user } = response.data;
