@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { Link, router } from 'expo-router';
@@ -21,7 +20,7 @@ export default function LoginScreen() {
     setLoading(false);
 
     if (result.success) {
-      router.replace('/home');
+      router.replace('/(tabs)');  // Changed from '/home'
     } else {
       Alert.alert('Login Failed', result.error);
     }
