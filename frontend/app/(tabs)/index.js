@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
+import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
+import React from 'react';
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -11,9 +13,11 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchListings();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchListings();
+    }, [])
+  );
 
   const fetchListings = async () => {
     try {
@@ -22,7 +26,6 @@ export default function HomeScreen() {
       setListings(response.data);
     } catch (error) {
       console.error('Error fetching listings:', error);
-      // Use mock data for now if API not ready
       setListings(getMockListings());
     } finally {
       setLoading(false);
@@ -133,7 +136,6 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Header */}
         <View style={{ backgroundColor: '#fff', paddingTop: 60, paddingHorizontal: 20, paddingBottom: 20 }}>
           <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 4 }}>
             Welcome back, {user?.name?.split(' ')[0] || 'User'}! 👋
@@ -143,7 +145,6 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        {/* Quick Stats */}
         <View style={{ flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 16, gap: 12 }}>
           <View style={{ 
             flex: 1, 
@@ -171,7 +172,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Listings Feed */}
         <View style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
           <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>
             {user?.role === 'talent' ? 'Opportunities for You' : 'Available Services'}

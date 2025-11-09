@@ -58,6 +58,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const getToken = async () => {
+    return await storage.getItem('token');
+  };
+
   const login = async (email, password) => {
     try {
       const response = await axios.post(`${API_URL}/login`, {
@@ -99,8 +103,11 @@ export const AuthProvider = ({ children }) => {
         name,
         email,
         password,
-        role: role || 'user',
-        location,
+        role: role || 'talent',
+        location: location || {
+          type: 'Point',
+          coordinates: [39.2083, -6.7924]
+        }
       });
       
       const { token, user } = response.data;
@@ -121,7 +128,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, getToken }}>
       {children}
     </AuthContext.Provider>
   );
