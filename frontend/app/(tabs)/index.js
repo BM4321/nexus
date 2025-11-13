@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
+import { router } from 'expo-router';
 import axios from 'axios';
 import React from 'react';
 
@@ -73,6 +74,7 @@ export default function HomeScreen() {
 
   const ListingCard = ({ listing }) => (
     <TouchableOpacity
+      onPress={() => router.push(`/listing/${listing._id}`)}
       style={{
         backgroundColor: '#fff',
         borderRadius: 12,
