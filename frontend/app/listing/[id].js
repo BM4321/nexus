@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
+import { useChat } from '../../context/ChatContext';
 import axios from 'axios';
 
 const API_URL = 'http://localhost:3000/api';
@@ -9,6 +10,7 @@ const API_URL = 'http://localhost:3000/api';
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams();
   const { user } = useAuth();
+  const { startConversation } = useChat();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -48,27 +50,55 @@ export default function ListingDetailScreen() {
     }
   });
 
-  const handleContact = () => {
+  const handleContact = async () => {
     if (!user) {
-      Alert.alert('Login Required', 'Please login to contact this user');
-      router.push('/login');
+      Alert.alert('Login Required', 'Please login to contact this user', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Login', onPress: () => router.push('/login') }
+      ]);
       return;
     }
 
-    // For now, show contact info
+    // Show loading alert
     Alert.alert(
-      'Contact Seller',
-      `Name: ${listing.userRef.name}\nEmail: ${listing.userRef.email}\nPhone: ${listing.userRef.phone || 'Not provided'}`,
+      'Start Conversation',
+      `Do you want to start a chat about "${listing.title}"?`,
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Start Chat', onPress: () => handleStartChat() }
+        {
+          text: 'Start Chat',
+          onPress: async () => {
+            try {
+              // Try to start conversation via API
+              const conversation = await startConversation(listing._id, listing.userRef._id);
+              
+              if (conversation) {
+                router.push(`/chat/${conversation._id}`);
+              } else {
+                // Fallback: Show contact info
+                Alert.alert(
+                  'Contact Information',
+                  `Name: ${listing.userRef.name}\nEmail: ${listing.userRef.email}\nPhone: ${listing.userRef.phone || 'Not provided'}\n\nNote: Real-time chat will be available once the backend is fully configured.`,
+                  [
+                    { text: 'OK' }
+                  ]
+                );
+              }
+            } catch (error) {
+              console.error('Contact error:', error);
+              // Fallback: Show contact info
+              Alert.alert(
+                'Contact Information',
+                `Name: ${listing.userRef.name}\nEmail: ${listing.userRef.email}\nPhone: ${listing.userRef.phone || 'Not provided'}\n\nNote: Real-time chat will be available once the backend is fully configured.`,
+                [
+                  { text: 'OK' }
+                ]
+              );
+            }
+          }
+        }
       ]
     );
-  };
-
-  const handleStartChat = () => {
-    // TODO: Implement chat functionality
-    Alert.alert('Coming Soon', 'Chat feature will be available soon!');
   };
 
   if (loading) {

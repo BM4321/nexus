@@ -59,7 +59,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const getToken = async () => {
-    return await storage.getItem('token');
+    try {
+      return await storage.getItem('token');
+    } catch (error) {
+      console.error('Error getting token:', error);
+      return null;
+    }
   };
 
   const login = async (email, password) => {

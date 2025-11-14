@@ -1,10 +1,13 @@
-import { Stack } from 'expo-router';
+import { Slot } from 'expo-router';
 import { AuthProvider } from '../context/AuthContext';
+import { ChatProvider } from '../context/ChatContext';
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <Stack />
+      <ChatProvider>
+        <Slot />
+      </ChatProvider>
     </AuthProvider>
   );
 }
