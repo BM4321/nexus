@@ -1,49 +1,35 @@
 const jwt = require('jsonwebtoken');
+require('dotenv').config(); // Add this line!
 
-// Get JWT Secret from environment variables
-const JWT_SECRET = process.env.JWT_SECRET; 
+const JWT_SECRET = process.env.JWT_SECRET; // Use .env secret
 
-/**
- * @desc Middleware to protect routes and ensure user is authenticated
- * @param {object} req - Express request object
- * @param {object} res - Express response object
- * @param {function} next - Callback function to proceed to the next middleware or controller
- */
-const protect = (req, res, next) => {
-  let token;
+const authenticateToken = (req, res, next) => {
+  console.log('🔐 Auth middleware called');
+  console.log('Using JWT_SECRET from .env:', JWT_SECRET ? 'Found' : 'Missing');
+  
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-  // 1. Check for token in the Authorization header (Bearer <token>)
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    try {
-      // Get token from header (split "Bearer <token>" and take the token part)
-      token = req.headers.authorization.split(' ')[1];
+  console.log('Token received:', token ? 'Yes' : 'No');
 
-      // 2. Verify token
-      const decoded = jwt.verify(token, JWT_SECRET);
-
-      // 3. Attach the user data to the request object (excluding the password hash)
-      // This allows controllers to know who the user is without querying the DB every time
-      req.user = {
-        id: decoded.id,
-        role: decoded.role,
-      };
-
-      // 4. Proceed to the next function (the controller)
-      next();
-    } catch (error) {
-      // Token is invalid (e.g., expired or bad signature)
-      console.error('JWT Verification Error:', error.message);
-      return res.status(401).json({ message: 'Not authorized, token failed.' });
-    }
-  }
-
-  // If no token is found in the header
   if (!token) {
-    return res.status(401).json({ message: 'Not authorized, no token provided.' });
+    console.log('❌ No token provided');
+    return res.status(401).json({ message: 'Access token required' });
   }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      console.log('❌ Token verification failed:', err.message);
+      return res.status(403).json({ 
+        message: 'Invalid or expired token',
+        error: err.message 
+      });
+    }
+
+    console.log('✅ Token verified for user:', user);
+    req.user = user;
+    next();
+  });
 };
 
-module.exports = { protect };
+module.exports = authenticateToken;

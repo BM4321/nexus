@@ -1,62 +1,53 @@
 const mongoose = require('mongoose');
 
-// Define the Listing Schema based on TSD requirements
-const ListingSchema = new mongoose.Schema({
-  userRef: {
+const listingSchema = new mongoose.Schema({
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: true
   },
   type: {
     type: String,
-    required: true,
-    enum: ['service', 'opportunity'],
+    enum: ['service', 'job', 'project'],
+    required: true
   },
   title: {
     type: String,
-    required: true,
-    trim: true,
+    required: true
   },
   description: {
     type: String,
-    required: true,
+    required: true
   },
   category: {
     type: String,
-    required: true,
+    required: true
   },
   priceRange: {
-    type: String,
-    required: true,
+    type: String
+  },
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number],
+      default: [0, 0]
+    }
   },
   status: {
     type: String,
-    required: true,
-    enum: ['active', 'paused', 'completed'],
-    default: 'active',
+    enum: ['active', 'inactive', 'completed'],
+    default: 'active'
   },
-  // GeoJSON Object for location
-  location: {
-    type: { // Definition of the GeoJSON 'type' sub-field
-      type: String,
-      enum: ['Point'],
-      required: true,
-      default: 'Point'
-    },
-    coordinates: { // Definition of the GeoJSON 'coordinates' sub-field
-      type: [Number], // [longitude, latitude]
-      required: true,
-    },
-    // *** IMPORTANT: NO 'required: true' HERE ***
-  }, 
-  // Make sure there is a comma after the 'location' block if it's not the last field
-  createdAt: { // The automatically added timestamp, or any other field that follows
+  createdAt: {
     type: Date,
-    default: Date.now,
-  }, 
-}, { timestamps: true });
+    default: Date.now
+  }
+});
 
-// IMPORTANT: Create a 2dsphere index on the location field for geospatial queries
-ListingSchema.index({ location: '2dsphere' });
+listingSchema.index({ location: '2dsphere' });
 
-module.exports = mongoose.model('Listing', ListingSchema);
+module.exports = mongoose.model('Listing', listingSchema);

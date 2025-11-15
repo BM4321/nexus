@@ -1,82 +1,110 @@
-require('dotenv').config(); // Load .env file at the very start
+require('dotenv').config(); 
 const express = require('express');
-const mongoose = require('mongoose');
-// --- NEW IMPORTS ---
-const http = require('http');
-const { Server } = require('socket.io');
 const cors = require('cors');
-// -------------------
+const http = require('http');
+const socketIo = require('socket.io');
+const connectDB = require('./config/database');
 
-/* --- Configuration --- */
-const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI;
-
-/* --- Database Connection --- */
-const connectDB = async () => {
-  try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('✅ MongoDB connected successfully.');
-  } catch (err) {
-    console.error(`❌ MongoDB connection error: ${err.message}`);
-    process.exit(1);
-  }
-};
-// Execute DB connection
-connectDB();
-
-/* --- Express App Setup --- */
-const app = express();
-app.use(express.json());
-
-// --- CORS: allow frontend requests (set CORS_ORIGIN in .env for production) ---
-const CORS_ORIGIN = process.env.CORS_ORIGIN || '*'; // e.g. "http://192.168.0.11:19000" or your Expo URL
-app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
-
-// Import Routes
 const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
+const profileRoutes = require('./routes/profileRoutes');
 const listingRoutes = require('./routes/listingRoutes');
-const chatRoutes = require('./routes/chatRoutes'); // <-- NEW IMPORT
+const chatRoutes = require('./routes/chatRoutes');
+const userRoutes = require('./routes/userRoutes');
 
-// Route Mounting
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/listings', listingRoutes);
-app.use('/api/chats', chatRoutes); // <-- NEW ROUTE MOUNT
-
-// Simple API health check
-app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Nexus MVP API is running! 🚀' });
-});
-
-/* --- Start HTTP + WebSocket Server --- */
-// 1) Create native HTTP server from Express app
+const app = express();
 const server = http.createServer(app);
 
-// 2) Initialize Socket.IO and attach to HTTP server
-const io = new Server(server, {
+// Connect to MongoDB Atlas
+connectDB(); 
+
+// Socket.IO setup
+const io = socketIo(server, {
   cors: {
-    origin: '*', // restrict in production to your frontend origin
-    methods: ['GET', 'POST'],
-  },
+    origin: 'http://localhost:8081',
+    methods: ['GET', 'POST']
+  }
 });
 
-// 3) Wire socket handlers (create ./sockets/chatSocket.js to use this)
-try {
-  require('./sockets/chatSocket')(io);
-} catch (e) {
-  console.warn('No chatSocket found or failed to load. Create /sockets/chatSocket.js to enable sockets.');
-}
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  console.log('🔌 New socket connection:', socket.id);
+  
+  socket.on('join-chat', (chatId) => {
+    socket.join(chatId);
+    console.log(`User joined chat: ${chatId}`);
+  });
+  
+  socket.on('send-message', (data) => {
+    console.log('Message received:', data);
+    io.to(data.chatId).emit('new-message', data);
+  });
+  
+  socket.on('disconnect', () => {
+    console.log('🔌 Socket disconnected:', socket.id);
+  });
+});
 
-// 4) Listen on HTTP server (Socket.IO uses same server)
-// OLD:
-// server.listen(PORT, () => {
-//   console.log(`Server running on http://localhost:${PORT}`);
-//   console.log('WebSocket server active.');
-// });
+// CORS configuration
+app.use(cors({
+  origin: ['http://localhost:8081', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-// NEW: bind to 0.0.0.0 so the server is reachable from other devices on the network
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
-  console.log('WebSocket server active.');
+// Body parser
+app.use(express.json());
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`\n📨 ${req.method} ${req.path}`);
+  if (req.headers.authorization) {
+    console.log('Auth header:', req.headers.authorization.substring(0, 20) + '...');
+  }
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('Body:', req.body);
+  }
+  next();
+});
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api', profileRoutes);
+app.use('/api', listingRoutes);
+app.use('/api', chatRoutes);
+app.use('/api', userRoutes);
+
+// Test endpoint
+app.get('/test', (req, res) => {
+  console.log('✅ Test endpoint hit!');
+  res.json({ message: 'Backend is working!' });
+});
+
+// 404 handler
+app.use((req, res) => {
+  console.log('❌ 404 - Route not found:', req.path);
+  res.status(404).json({ message: 'Route not found' });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('❌ Error:', err);
+  res.status(500).json({ message: 'Server error', error: err.message });
+});
+
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, () => {
+  console.log(`\n🚀 Server running on http://localhost:${PORT}`);
+  console.log('📡 Ready to receive requests...');
+  console.log('Press CTRL+C to stop\n');
+});
+
+// Handle errors
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use!`);
+  } else {
+    console.error('❌ Server error:', error);
+  }
 });

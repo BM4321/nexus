@@ -1,71 +1,71 @@
 import { Tabs } from 'expo-router';
-import { View, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-export default function TabsLayout() {
+export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: '#8E8E93',
+        tabBarInactiveTintColor: '#999',
         tabBarStyle: {
           backgroundColor: '#fff',
           borderTopWidth: 1,
-          borderTopColor: '#E5E5EA',
+          borderTopColor: '#e0e0e0',
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: '600',
         },
       }}
     >
-      <Tabs.Screen 
-        name="index" 
-        options={{ 
+      <Tabs.Screen
+        name="index"
+        options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24 }}>🏠</Text>
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
           ),
-        }} 
+        }}
       />
-      <Tabs.Screen 
-        name="browse" 
-        options={{ 
+      <Tabs.Screen
+        name="browse"
+        options={{
           title: 'Browse',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24 }}>🔍</Text>
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="search" size={size} color={color} />
           ),
-        }} 
+        }}
       />
-      <Tabs.Screen 
-        name="create" 
-        options={{ 
+      <Tabs.Screen
+        name="create"
+        options={{
           title: 'Create',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24 }}>➕</Text>
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle" size={size} color={color} />
           ),
-        }} 
+        }}
       />
-      <Tabs.Screen 
-        name="chats" 
-        options={{ 
-          title: 'Messages',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24 }}>💬</Text>
+      <Tabs.Screen
+        name="chats"
+        options={{
+          title: 'Chats',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubbles" size={size} color={color} />
           ),
-        }} 
+        }}
       />
-      <Tabs.Screen 
-        name="profile" 
-        options={{ 
+      <Tabs.Screen
+        name="profile"
+        options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24 }}>👤</Text>
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
           ),
-        }} 
+        }}
       />
     </Tabs>
   );
